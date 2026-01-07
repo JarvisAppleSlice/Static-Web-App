@@ -27,6 +27,7 @@ const accordionDiv = document.getElementById("accordion");
 qaItems.forEach((qaItem) => {
 	const questionText = qaItem.question;
 	const answerText = qaItem.answer;
+	const br = document.createElement("br");
 
 	// const { questionText: question, answerText: answer } = qaItem;
 
@@ -41,4 +42,6 @@ qaItems.forEach((qaItem) => {
 	questionDiv.appendChild(answerDiv);
 
 	accordionDiv.appendChild(questionDiv);
+
+	accordionDiv.appendChild(br);
 });
