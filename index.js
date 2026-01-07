@@ -1,3 +1,4 @@
+//Comonly asked questions 1
 const qaItems = [
 	{
 		question: "How do I track my package?",
@@ -22,3 +23,22 @@ const qaItems = [
 ];
 
 const accordionDiv = document.getElementById("accordion");
+
+qaItems.forEach((qaItem) => {
+	const questionText = qaItem.question;
+	const answerText = qaItem.answer;
+
+	// const { questionText: question, answerText: answer } = qaItem;
+
+	const questionDiv = document.createElement("div");
+	questionDiv.classList.add("accordion-question");
+	questionDiv.textContent = questionText;
+
+	const answerDiv = document.createElement("div");
+	answerDiv.classList.add("accordion-answer");
+	answerDiv.textContent = answerText;
+
+	questionDiv.appendChild(answerDiv);
+
+	accordionDiv.appendChild(questionDiv);
+});
