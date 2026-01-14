@@ -50,3 +50,112 @@ qaItems.forEach((qaItem) => {
 
 	accordionDiv.appendChild(br);
 });
+
+class DatabaseObject {
+	ToString() {
+		throw new Error("Not implemented");
+	}
+}
+
+class Product {
+constructor(name, inventory) {}
+}
+
+ToString() {
+	return `${this.name}: ${inventory} left in stock`;
+}
+
+class Delivery {
+constructor(address, scheduledtime, product, quantity) {}
+}
+
+toString() {
+	return `Delivering ${quantity} of ${product} to ${address} at ${scheduledtime}`;
+}
+
+class ProductDao {
+static seeds = [
+	{
+	name: "apples",
+	inventory: 100,
+},
+{
+	name: "bananas",
+	inventory: 80,
+},
+{
+	name: "peaches",
+	inventory: 70,
+},
+]
+
+	getAll() {
+throw new Error("not implemented");
+	}
+	update(product) {
+throw new Error("not implemented");
+	}
+}
+
+class SessionStorageProductDao extends ProductDao {
+
+constructor() {
+	this.database = sessionStorage;
+}
+
+		getAll() {
+const productsAsJSON = this.database.getItem("products");
+const productsData = productsAsJSON ? JSON.parse(productsAsJSON) : ProductDao.seeds;
+return productsData.map((productsData) => {
+	const { name, inventory } = productData
+ 	new Product(name, inventory)
+ 	}
+}
+
+	update(product) {
+const existingproducts = this.getAll();
+const indexToDelete = existingproducts.findIndex((productInList) => productInList.name == product.name);
+existingproducts.splice(indexToDelete, 1, product);
+	}
+}
+
+class DeliveryDao {
+	getAll() {
+throw new Error("not implemented");
+	}
+	create(delivery) {
+throw new Error("not implemented");
+	}
+}
+
+class SessionStorageProductDao extends DeliveryDao {
+	constructor() {
+		this.database = sessionStorage;
+	}
+		getAll() {
+const deliveriesAsJSON = this.database.getItem("deliveries")
+return JSON.parse(deliveriesAsJSON);
+	}
+	create(delivery) {
+const deliveries = this.getAll();
+deliveries.push(delivery);
+this.database.setItem("deliveries", deliveries);
+	}
+}
+
+// class cookiesStorageProductDao extends ProductDao {
+
+// 	constructor() {
+// 		this.database = document.cookie;
+// 	}
+// 	getAll() {
+// const productsAsJSON = this.database.getItem("products");
+// return productsAsJSON ? JSON.parse(productsAsJSON) : [];
+// 	}
+
+// 	updateProduct() {
+// const existingproducts = this.getAll();
+// const indexToDelete = existingproducts.findIndex((productInList) => productInList.name == product.name);
+// existingproducts.splice(indexToDelete, 1, product);
+// 	}
+// }
