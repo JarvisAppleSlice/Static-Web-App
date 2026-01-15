@@ -53,38 +53,56 @@ qaItems.forEach((qaItem) => {
 
 //classes----
 class DatabaseObject {
-	ToString() {
+	toString() {
 		throw new Error("Not implemented");
 	}
 }
 
-class Product {
-	constructor(name, inventory) {}
+class Product extends DatabaseObject {
+	constructor(name, inventory) {
+		super();
+		this.name = name;
+		this.inventory = inventory;
+	}
 
-	ToString() {
-		return `${this.name}: ${inventory} left in stock`;
+	toString() {
+		return `${this.name}: ${this.inventory} left in stock`;
 	}
 }
-class Delivery {
-	constructor(address, scheduledtime, product, quantity) {}
+
+class Delivery extends DatabaseObject {
+	constructor(params) {
+		super();
+		const { address, scheduledtime, product, quantity } = params;
+		this.address = address;
+		this.scheduledtime = scheduledtime;
+		this.product = product;
+		this.quantity = quantity;
+	}
 
 	toString() {
 		return `Delivering ${quantity} of ${product} to ${address} at ${scheduledtime}`;
+	}
+
+	static create(params) {
+		// const {address, scheduledtime, product, quantity} = params
+		// return new Delivery(address, scheduledtime, product, quantity)
+		return new Delivery(params);
 	}
 }
 
 class ProductDao {
 	static seeds = [
 		{
-			name: "apples",
+			name: "Apples",
 			inventory: 100,
 		},
 		{
-			name: "bananas",
+			name: "Bananas",
 			inventory: 80,
 		},
 		{
-			name: "peaches",
+			name: "Peaches",
 			inventory: 70,
 		},
 	];
@@ -92,6 +110,11 @@ class ProductDao {
 	getAll() {
 		throw new Error("not implemented");
 	}
+
+	getProductByame(name) {
+		throw new Error("not implemented");
+	}
+
 	update(product) {
 		throw new Error("not implemented");
 	}
@@ -99,16 +122,22 @@ class ProductDao {
 
 class SessionStorageProductDao extends ProductDao {
 	constructor() {
+		super();
 		this.database = sessionStorage;
 	}
 
 	getAll() {
 		const productsAsJSON = this.database.getItem("products");
 		const productsData = productsAsJSON ? JSON.parse(productsAsJSON) : ProductDao.seeds;
-		return productsData.map((productsData) => {
-			const { name, inventory } = productsData;
-			new Product(name, inventory);
+		return productsData.map((productData) => {
+			const { name, inventory } = productData;
+			return new Product(name, inventory);
 		});
+	}
+
+	getProductByame(name) {
+		const products = getAll();
+		return products.find((product) => product.name == name);
 	}
 
 	update(product) {
@@ -129,44 +158,96 @@ class DeliveryDao {
 	}
 }
 
-class SessionStorageProductDao extends DeliveryDao {
+class SessionStorageDeliveryDao extends DeliveryDao {
 	constructor() {
+		super();
 		this.database = sessionStorage;
 	}
 	getAll() {
-		const deliveriesAsJSON = this.database.getItem("deliveries");
-		return JSON.parse(deliveriesAsJSON);
+		const deliveriesInSessionStorage = this.database.getItem("deliveries");
+		const deliveriesdata = deliveriesInSessionStorage ? JSON.parse(deliveriesAsJSON) : [];
+		return deliveriesdata.map((deliveryData) => {
+			return Delivery.create(deliveryData);
+		});
 	}
 	create(delivery) {
 		const deliveries = this.getAll();
 		deliveries.push(delivery);
-		this.database.setItem("deliveries", deliveries);
+		this.database.setItem("deliveries", JSON.stringify(deliveries));
 	}
 }
 
-class cookiesStorageProductDao extends ProductDao {
-	constructor() {
-		this.database = document.cookie;
+class CreateDeliveryService {
+	constructor(ProductDao, DeliveryDao) {
+		this.productDao = productDao;
+		this.deliveryDao = deliveryDao;
 	}
-	getAll() {
-		const productsAsJSON = this.database.getItem("products");
-		return productsAsJSON ? JSON.parse(productsAsJSON) : [];
-	}
-
-	updateProduct() {
-		const existingproducts = this.getAll();
-		const indexToDelete = existingproducts.findIndex(
-			(productInList) => productInList.name == product.name,
-		);
-		existingproducts.splice(indexToDelete, 1, product);
+	createDelivery(productName, quantity, address, scheduledtime) {
+		const product = this.productDao.getProductByame(productName);
+		const newInventory = product.inventory - quantity;
+		product.inventory = newInventory;
+		const deliveryData = {
+			product,
+			quantity,
+			address,
+			scheduledtime,
+		};
+		this.deliveryDao.create(deliveryData);
+		this.productDao.update(product);
 	}
 }
+const productDao = new SessionStorageProductDao();
+const deliveryDao = new SessionStorageDeliveryDao();
+const createDeliveryService = new CreateDeliveryService(productDao, deliveryDao);
 
-localStorage.setItem("name", "bob");
-console.log(localStorage.getItem("name"));
+const deliveryList = document.getElementById("deliveries-list");
+const deliveries = deliveryDao.getAll();
+for (let i = 0; i < deliveries.length; i++) {
+	const delivery = deliveries[i];
+	const deliveryLi = document.createElement("li");
+	deliveryLi.textContent = delivery.toString();
+	deliveryList.appendChild(deliveryLi);
+}
 
-sessionStorage.setItem("name", "john");
-console.log(sessionStorage.getItem("name"));
+const productNameSelect = document.querySelector("#deliveries form select");
+const products = productDao.getAll();
+console.log("products");
+console.log(products[0].toString());
+for (let i = 0; i < products.length; i++) {
+	const product = products[i];
+	const option = document.createElement("option");
+	option.innerText = product.toString();
+	option.setAttribute("value", product.name);
+	productNameSelect.appendChild(option);
+}
+
+// class CookiesStorageProductDao extends ProductDao {
+// 	constructor() {
+// 		this.database = document.cookie;
+// 	}
+// 	getAll() {
+// 		const productsAsJSON = this.database.getItem("products");
+// 		const productsdata = productsAsJSON ? JSON.parse(productsAsJSON) : ProductDao.seeds;
+// 		return productsdata.map((productdata) => {
+// 			const { name, inventory } = productdata;
+// 			new Product(name, inventory);
+// 		});
+// 	}
+
+// 	updateProduct() {
+// 		const existingproducts = this.getAll();
+// 		const indexToDelete = existingproducts.findIndex(
+// 			(productInList) => productInList.name == product.name,
+// 		);
+// 		existingproducts.splice(indexToDelete, 1, product);
+// 	}
+// }
+
+// localStorage.setItem("name", "bob");
+// console.log(localStorage.getItem("name"));
+
+// sessionStorage.setItem("name", "john");
+// console.log(sessionStorage.getItem("name"));
 
 // Class practice
 
