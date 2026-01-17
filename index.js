@@ -81,7 +81,7 @@ class Delivery extends DatabaseObject {
 	}
 
 	toString() {
-		return `Delivering ${quantity} of ${product} to ${address} at ${scheduledtime}`;
+		return `Delivering ${this.quantity} ${this.product.name} to ${this.address} at ${this.scheduledtime}`;
 	}
 
 	static create(params) {
@@ -136,7 +136,7 @@ class SessionStorageProductDao extends ProductDao {
 	}
 
 	getProductByame(name) {
-		const products = getAll();
+		const products = this.getAll();
 		return products.find((product) => product.name == name);
 	}
 
@@ -165,7 +165,9 @@ class SessionStorageDeliveryDao extends DeliveryDao {
 	}
 	getAll() {
 		const deliveriesInSessionStorage = this.database.getItem("deliveries");
-		const deliveriesdata = deliveriesInSessionStorage ? JSON.parse(deliveriesAsJSON) : [];
+		const deliveriesdata = deliveriesInSessionStorage
+			? JSON.parse(deliveriesInSessionStorage)
+			: [];
 		return deliveriesdata.map((deliveryData) => {
 			return Delivery.create(deliveryData);
 		});
@@ -220,6 +222,24 @@ for (let i = 0; i < products.length; i++) {
 	option.setAttribute("value", product.name);
 	productNameSelect.appendChild(option);
 }
+
+const createDeliveryForm = document.querySelector("#deliveries form");
+console.log(createDeliveryForm);
+console.log("createDeliveryForm");
+console.log("About to submit form.");
+createDeliveryForm.addEventListener("submit", (event) => {
+	event.preventDefault();
+	console.log("Submitting form...");
+	const formData = new FormData(event.target);
+	const address = formData.get("address");
+	const scheduledTime = formData.get("scheduledTime");
+	const productName = formData.get("productName");
+	const quantity = formData.get("quantity");
+
+	createDeliveryService.createDelivery(productName, quantity, address, scheduledTime);
+});
+
+// 35m
 
 // class CookiesStorageProductDao extends ProductDao {
 // 	constructor() {
